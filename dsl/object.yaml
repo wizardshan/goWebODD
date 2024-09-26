@@ -1,0 +1,7 @@
+- domain: user
+  tables:
+    - name: user
+      columns:
+        - name: id
+          primary_key: true
+        - name: nickname
