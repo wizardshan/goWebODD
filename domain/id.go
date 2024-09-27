@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"encoding/json"
+	"github.com/tidwall/gjson"
 )
 
 type ID struct {
@@ -14,9 +14,7 @@ func NewID(v int64) ID {
 }
 
 func (o *ID) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &o.Value); err != nil {
-		return err
-	}
+	o.Value = gjson.ParseBytes(data).Int()
 	o.Set = true
 	return nil
 }

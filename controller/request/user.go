@@ -6,7 +6,6 @@ import (
 )
 
 type UserOne struct {
-	//`binding:"omitempty"`
 	ID domain.ID
 }
 

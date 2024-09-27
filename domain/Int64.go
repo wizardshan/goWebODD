@@ -39,14 +39,22 @@ func (o Int64) Or(d int64) int64 {
 }
 
 func (o *Int64) UnmarshalJSON(data []byte) error {
+	if data[0] == '{' {
+		results := gjson.GetManyBytes(data, "Value", "Mask")
+		if results[0].Exists() {
+			o.Value = results[0].Int()
+			o.Set = true
+		}
+		if results[1].Exists() {
+			o.Mask = true
+		}
+		return nil
+	}
 	if err := json.Unmarshal(data, &o.Value); err == nil {
 		o.Set = true
 		return nil
 	}
 
-	results := gjson.GetManyBytes(data, "Value", "Set")
-	o.Value = results[0].Int()
-	o.Set = results[1].Bool()
 	return nil
 }
 
