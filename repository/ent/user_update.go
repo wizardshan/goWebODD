@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"goWebODD/repository/ent/post"
 	"goWebODD/repository/ent/predicate"
 	"goWebODD/repository/ent/user"
 
@@ -70,14 +71,14 @@ func (uu *UserUpdate) SetNillablePassword(s *string) *UserUpdate {
 }
 
 // SetAge sets the "age" field.
-func (uu *UserUpdate) SetAge(i int) *UserUpdate {
+func (uu *UserUpdate) SetAge(i int64) *UserUpdate {
 	uu.mutation.ResetAge()
 	uu.mutation.SetAge(i)
 	return uu
 }
 
 // SetNillableAge sets the "age" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableAge(i *int) *UserUpdate {
+func (uu *UserUpdate) SetNillableAge(i *int64) *UserUpdate {
 	if i != nil {
 		uu.SetAge(*i)
 	}
@@ -85,20 +86,20 @@ func (uu *UserUpdate) SetNillableAge(i *int) *UserUpdate {
 }
 
 // AddAge adds i to the "age" field.
-func (uu *UserUpdate) AddAge(i int) *UserUpdate {
+func (uu *UserUpdate) AddAge(i int64) *UserUpdate {
 	uu.mutation.AddAge(i)
 	return uu
 }
 
 // SetLevel sets the "level" field.
-func (uu *UserUpdate) SetLevel(i int) *UserUpdate {
+func (uu *UserUpdate) SetLevel(i int64) *UserUpdate {
 	uu.mutation.ResetLevel()
 	uu.mutation.SetLevel(i)
 	return uu
 }
 
 // SetNillableLevel sets the "level" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableLevel(i *int) *UserUpdate {
+func (uu *UserUpdate) SetNillableLevel(i *int64) *UserUpdate {
 	if i != nil {
 		uu.SetLevel(*i)
 	}
@@ -106,14 +107,50 @@ func (uu *UserUpdate) SetNillableLevel(i *int) *UserUpdate {
 }
 
 // AddLevel adds i to the "level" field.
-func (uu *UserUpdate) AddLevel(i int) *UserUpdate {
+func (uu *UserUpdate) AddLevel(i int64) *UserUpdate {
 	uu.mutation.AddLevel(i)
 	return uu
+}
+
+// AddPostIDs adds the "posts" edge to the Post entity by IDs.
+func (uu *UserUpdate) AddPostIDs(ids ...int64) *UserUpdate {
+	uu.mutation.AddPostIDs(ids...)
+	return uu
+}
+
+// AddPosts adds the "posts" edges to the Post entity.
+func (uu *UserUpdate) AddPosts(p ...*Post) *UserUpdate {
+	ids := make([]int64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.AddPostIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearPosts clears all "posts" edges to the Post entity.
+func (uu *UserUpdate) ClearPosts() *UserUpdate {
+	uu.mutation.ClearPosts()
+	return uu
+}
+
+// RemovePostIDs removes the "posts" edge to Post entities by IDs.
+func (uu *UserUpdate) RemovePostIDs(ids ...int64) *UserUpdate {
+	uu.mutation.RemovePostIDs(ids...)
+	return uu
+}
+
+// RemovePosts removes "posts" edges to Post entities.
+func (uu *UserUpdate) RemovePosts(p ...*Post) *UserUpdate {
+	ids := make([]int64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uu.RemovePostIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -162,16 +199,61 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+		_spec.SetField(user.FieldAge, field.TypeInt64, value)
 	}
 	if value, ok := uu.mutation.AddedAge(); ok {
-		_spec.AddField(user.FieldAge, field.TypeInt, value)
+		_spec.AddField(user.FieldAge, field.TypeInt64, value)
 	}
 	if value, ok := uu.mutation.Level(); ok {
-		_spec.SetField(user.FieldLevel, field.TypeInt, value)
+		_spec.SetField(user.FieldLevel, field.TypeInt64, value)
 	}
 	if value, ok := uu.mutation.AddedLevel(); ok {
-		_spec.AddField(user.FieldLevel, field.TypeInt, value)
+		_spec.AddField(user.FieldLevel, field.TypeInt64, value)
+	}
+	if uu.mutation.PostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedPostsIDs(); len(nodes) > 0 && !uu.mutation.PostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.PostsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -236,14 +318,14 @@ func (uuo *UserUpdateOne) SetNillablePassword(s *string) *UserUpdateOne {
 }
 
 // SetAge sets the "age" field.
-func (uuo *UserUpdateOne) SetAge(i int) *UserUpdateOne {
+func (uuo *UserUpdateOne) SetAge(i int64) *UserUpdateOne {
 	uuo.mutation.ResetAge()
 	uuo.mutation.SetAge(i)
 	return uuo
 }
 
 // SetNillableAge sets the "age" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableAge(i *int) *UserUpdateOne {
+func (uuo *UserUpdateOne) SetNillableAge(i *int64) *UserUpdateOne {
 	if i != nil {
 		uuo.SetAge(*i)
 	}
@@ -251,20 +333,20 @@ func (uuo *UserUpdateOne) SetNillableAge(i *int) *UserUpdateOne {
 }
 
 // AddAge adds i to the "age" field.
-func (uuo *UserUpdateOne) AddAge(i int) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddAge(i int64) *UserUpdateOne {
 	uuo.mutation.AddAge(i)
 	return uuo
 }
 
 // SetLevel sets the "level" field.
-func (uuo *UserUpdateOne) SetLevel(i int) *UserUpdateOne {
+func (uuo *UserUpdateOne) SetLevel(i int64) *UserUpdateOne {
 	uuo.mutation.ResetLevel()
 	uuo.mutation.SetLevel(i)
 	return uuo
 }
 
 // SetNillableLevel sets the "level" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableLevel(i *int) *UserUpdateOne {
+func (uuo *UserUpdateOne) SetNillableLevel(i *int64) *UserUpdateOne {
 	if i != nil {
 		uuo.SetLevel(*i)
 	}
@@ -272,14 +354,50 @@ func (uuo *UserUpdateOne) SetNillableLevel(i *int) *UserUpdateOne {
 }
 
 // AddLevel adds i to the "level" field.
-func (uuo *UserUpdateOne) AddLevel(i int) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddLevel(i int64) *UserUpdateOne {
 	uuo.mutation.AddLevel(i)
 	return uuo
+}
+
+// AddPostIDs adds the "posts" edge to the Post entity by IDs.
+func (uuo *UserUpdateOne) AddPostIDs(ids ...int64) *UserUpdateOne {
+	uuo.mutation.AddPostIDs(ids...)
+	return uuo
+}
+
+// AddPosts adds the "posts" edges to the Post entity.
+func (uuo *UserUpdateOne) AddPosts(p ...*Post) *UserUpdateOne {
+	ids := make([]int64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.AddPostIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearPosts clears all "posts" edges to the Post entity.
+func (uuo *UserUpdateOne) ClearPosts() *UserUpdateOne {
+	uuo.mutation.ClearPosts()
+	return uuo
+}
+
+// RemovePostIDs removes the "posts" edge to Post entities by IDs.
+func (uuo *UserUpdateOne) RemovePostIDs(ids ...int64) *UserUpdateOne {
+	uuo.mutation.RemovePostIDs(ids...)
+	return uuo
+}
+
+// RemovePosts removes "posts" edges to Post entities.
+func (uuo *UserUpdateOne) RemovePosts(p ...*Post) *UserUpdateOne {
+	ids := make([]int64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uuo.RemovePostIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -358,16 +476,61 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+		_spec.SetField(user.FieldAge, field.TypeInt64, value)
 	}
 	if value, ok := uuo.mutation.AddedAge(); ok {
-		_spec.AddField(user.FieldAge, field.TypeInt, value)
+		_spec.AddField(user.FieldAge, field.TypeInt64, value)
 	}
 	if value, ok := uuo.mutation.Level(); ok {
-		_spec.SetField(user.FieldLevel, field.TypeInt, value)
+		_spec.SetField(user.FieldLevel, field.TypeInt64, value)
 	}
 	if value, ok := uuo.mutation.AddedLevel(); ok {
-		_spec.AddField(user.FieldLevel, field.TypeInt, value)
+		_spec.AddField(user.FieldLevel, field.TypeInt64, value)
+	}
+	if uuo.mutation.PostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedPostsIDs(); len(nodes) > 0 && !uuo.mutation.PostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.PostsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

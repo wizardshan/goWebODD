@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"goWebODD/repository/ent/post"
 	"goWebODD/repository/ent/user"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -54,13 +55,13 @@ func (uc *UserCreate) SetPassword(s string) *UserCreate {
 }
 
 // SetAge sets the "age" field.
-func (uc *UserCreate) SetAge(i int) *UserCreate {
+func (uc *UserCreate) SetAge(i int64) *UserCreate {
 	uc.mutation.SetAge(i)
 	return uc
 }
 
 // SetNillableAge sets the "age" field if the given value is not nil.
-func (uc *UserCreate) SetNillableAge(i *int) *UserCreate {
+func (uc *UserCreate) SetNillableAge(i *int64) *UserCreate {
 	if i != nil {
 		uc.SetAge(*i)
 	}
@@ -68,13 +69,13 @@ func (uc *UserCreate) SetNillableAge(i *int) *UserCreate {
 }
 
 // SetLevel sets the "level" field.
-func (uc *UserCreate) SetLevel(i int) *UserCreate {
+func (uc *UserCreate) SetLevel(i int64) *UserCreate {
 	uc.mutation.SetLevel(i)
 	return uc
 }
 
 // SetNillableLevel sets the "level" field if the given value is not nil.
-func (uc *UserCreate) SetNillableLevel(i *int) *UserCreate {
+func (uc *UserCreate) SetNillableLevel(i *int64) *UserCreate {
 	if i != nil {
 		uc.SetLevel(*i)
 	}
@@ -85,6 +86,21 @@ func (uc *UserCreate) SetNillableLevel(i *int) *UserCreate {
 func (uc *UserCreate) SetID(i int64) *UserCreate {
 	uc.mutation.SetID(i)
 	return uc
+}
+
+// AddPostIDs adds the "posts" edge to the Post entity by IDs.
+func (uc *UserCreate) AddPostIDs(ids ...int64) *UserCreate {
+	uc.mutation.AddPostIDs(ids...)
+	return uc
+}
+
+// AddPosts adds the "posts" edges to the Post entity.
+func (uc *UserCreate) AddPosts(p ...*Post) *UserCreate {
+	ids := make([]int64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddPostIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -202,12 +218,28 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.Password = value
 	}
 	if value, ok := uc.mutation.Age(); ok {
-		_spec.SetField(user.FieldAge, field.TypeInt, value)
+		_spec.SetField(user.FieldAge, field.TypeInt64, value)
 		_node.Age = value
 	}
 	if value, ok := uc.mutation.Level(); ok {
-		_spec.SetField(user.FieldLevel, field.TypeInt, value)
+		_spec.SetField(user.FieldLevel, field.TypeInt64, value)
 		_node.Level = value
+	}
+	if nodes := uc.mutation.PostsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PostsTable,
+			Columns: []string{user.PostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(post.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

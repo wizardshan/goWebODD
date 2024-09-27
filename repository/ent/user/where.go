@@ -6,6 +6,7 @@ import (
 	"goWebODD/repository/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -69,12 +70,12 @@ func Password(v string) predicate.User {
 }
 
 // Age applies equality check predicate on the "age" field. It's identical to AgeEQ.
-func Age(v int) predicate.User {
+func Age(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAge, v))
 }
 
 // Level applies equality check predicate on the "level" field. It's identical to LevelEQ.
-func Level(v int) predicate.User {
+func Level(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldLevel, v))
 }
 
@@ -274,83 +275,106 @@ func PasswordContainsFold(v string) predicate.User {
 }
 
 // AgeEQ applies the EQ predicate on the "age" field.
-func AgeEQ(v int) predicate.User {
+func AgeEQ(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAge, v))
 }
 
 // AgeNEQ applies the NEQ predicate on the "age" field.
-func AgeNEQ(v int) predicate.User {
+func AgeNEQ(v int64) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldAge, v))
 }
 
 // AgeIn applies the In predicate on the "age" field.
-func AgeIn(vs ...int) predicate.User {
+func AgeIn(vs ...int64) predicate.User {
 	return predicate.User(sql.FieldIn(FieldAge, vs...))
 }
 
 // AgeNotIn applies the NotIn predicate on the "age" field.
-func AgeNotIn(vs ...int) predicate.User {
+func AgeNotIn(vs ...int64) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldAge, vs...))
 }
 
 // AgeGT applies the GT predicate on the "age" field.
-func AgeGT(v int) predicate.User {
+func AgeGT(v int64) predicate.User {
 	return predicate.User(sql.FieldGT(FieldAge, v))
 }
 
 // AgeGTE applies the GTE predicate on the "age" field.
-func AgeGTE(v int) predicate.User {
+func AgeGTE(v int64) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldAge, v))
 }
 
 // AgeLT applies the LT predicate on the "age" field.
-func AgeLT(v int) predicate.User {
+func AgeLT(v int64) predicate.User {
 	return predicate.User(sql.FieldLT(FieldAge, v))
 }
 
 // AgeLTE applies the LTE predicate on the "age" field.
-func AgeLTE(v int) predicate.User {
+func AgeLTE(v int64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldAge, v))
 }
 
 // LevelEQ applies the EQ predicate on the "level" field.
-func LevelEQ(v int) predicate.User {
+func LevelEQ(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldLevel, v))
 }
 
 // LevelNEQ applies the NEQ predicate on the "level" field.
-func LevelNEQ(v int) predicate.User {
+func LevelNEQ(v int64) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldLevel, v))
 }
 
 // LevelIn applies the In predicate on the "level" field.
-func LevelIn(vs ...int) predicate.User {
+func LevelIn(vs ...int64) predicate.User {
 	return predicate.User(sql.FieldIn(FieldLevel, vs...))
 }
 
 // LevelNotIn applies the NotIn predicate on the "level" field.
-func LevelNotIn(vs ...int) predicate.User {
+func LevelNotIn(vs ...int64) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldLevel, vs...))
 }
 
 // LevelGT applies the GT predicate on the "level" field.
-func LevelGT(v int) predicate.User {
+func LevelGT(v int64) predicate.User {
 	return predicate.User(sql.FieldGT(FieldLevel, v))
 }
 
 // LevelGTE applies the GTE predicate on the "level" field.
-func LevelGTE(v int) predicate.User {
+func LevelGTE(v int64) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldLevel, v))
 }
 
 // LevelLT applies the LT predicate on the "level" field.
-func LevelLT(v int) predicate.User {
+func LevelLT(v int64) predicate.User {
 	return predicate.User(sql.FieldLT(FieldLevel, v))
 }
 
 // LevelLTE applies the LTE predicate on the "level" field.
-func LevelLTE(v int) predicate.User {
+func LevelLTE(v int64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldLevel, v))
+}
+
+// HasPosts applies the HasEdge predicate on the "posts" edge.
+func HasPosts() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PostsTable, PostsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPostsWith applies the HasEdge predicate on the "posts" edge with a given conditions (other predicates).
+func HasPostsWith(preds ...predicate.Post) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newPostsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

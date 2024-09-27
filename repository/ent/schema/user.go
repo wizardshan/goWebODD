@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -15,11 +16,13 @@ func (User) Fields() []ent.Field {
 		field.String("hash_id").Default(""),
 		field.String("mobile").Default(""),
 		field.String("password").Sensitive(),
-		field.Int("age").Default(0),
-		field.Int("level").Default(0),
+		field.Int64("age").Default(0),
+		field.Int64("level").Default(0),
 	}
 }
 
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("posts", Post.Type),
+	}
 }

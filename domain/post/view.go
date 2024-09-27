@@ -1,20 +1,20 @@
-package user
+package post
 
 import (
 	"github.com/tidwall/gjson"
 )
 
-type Age struct {
+type View struct {
 	Value int64 `binding:"min=1,max=150"`
 	Set   bool  `binding:"required"`
 	Mask  bool
 }
 
-func NewAge(v int64) Age {
-	return Age{Value: v, Set: true}
+func NewView(v int64) View {
+	return View{Value: v, Set: true}
 }
 
-func (o *Age) UnmarshalJSON(data []byte) error {
+func (o *View) UnmarshalJSON(data []byte) error {
 	if data[0] != '{' {
 		o.Value = gjson.ParseBytes(data).Int()
 		o.Set = true
@@ -30,4 +30,8 @@ func (o *Age) UnmarshalJSON(data []byte) error {
 		o.Mask = results[1].Bool()
 	}
 	return nil
+}
+
+func (o *View) Name() string {
+	return "View"
 }

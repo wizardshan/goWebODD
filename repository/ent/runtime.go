@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"goWebODD/repository/ent/post"
 	"goWebODD/repository/ent/schema"
 	"goWebODD/repository/ent/user"
 )
@@ -11,6 +12,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	postFields := schema.Post{}.Fields()
+	_ = postFields
+	// postDescUserID is the schema descriptor for user_id field.
+	postDescUserID := postFields[1].Descriptor()
+	// post.DefaultUserID holds the default value on creation for the user_id field.
+	post.DefaultUserID = postDescUserID.Default.(int64)
+	// postDescTitle is the schema descriptor for title field.
+	postDescTitle := postFields[2].Descriptor()
+	// post.DefaultTitle holds the default value on creation for the title field.
+	post.DefaultTitle = postDescTitle.Default.(string)
+	// postDescContent is the schema descriptor for content field.
+	postDescContent := postFields[3].Descriptor()
+	// post.DefaultContent holds the default value on creation for the content field.
+	post.DefaultContent = postDescContent.Default.(string)
+	// postDescView is the schema descriptor for view field.
+	postDescView := postFields[4].Descriptor()
+	// post.DefaultView holds the default value on creation for the view field.
+	post.DefaultView = postDescView.Default.(int64)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescHashID is the schema descriptor for hash_id field.
@@ -24,9 +43,9 @@ func init() {
 	// userDescAge is the schema descriptor for age field.
 	userDescAge := userFields[4].Descriptor()
 	// user.DefaultAge holds the default value on creation for the age field.
-	user.DefaultAge = userDescAge.Default.(int)
+	user.DefaultAge = userDescAge.Default.(int64)
 	// userDescLevel is the schema descriptor for level field.
 	userDescLevel := userFields[5].Descriptor()
 	// user.DefaultLevel holds the default value on creation for the level field.
-	user.DefaultLevel = userDescLevel.Default.(int)
+	user.DefaultLevel = userDescLevel.Default.(int64)
 }

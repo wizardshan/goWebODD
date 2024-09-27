@@ -1,6 +1,8 @@
 package user
 
-import "encoding/json"
+import (
+	"github.com/tidwall/gjson"
+)
 
 const (
 	LevelNormal   = 0
@@ -10,12 +12,12 @@ const (
 )
 
 type Level struct {
-	Value int  `binding:"oneof=0 10 20 30"`
-	Set   bool `binding:"required"`
+	Value int64 `binding:"oneof=0 10 20 30"`
+	Set   bool  `binding:"required"`
 	Desc  string
 }
 
-func NewLevel(v int) Level {
+func NewLevel(v int64) Level {
 	o := Level{Value: v, Set: true}
 	o.Desc = o.GetDesc()
 	return o
@@ -29,8 +31,8 @@ func (o Level) GetDesc() string {
 	return "未知"
 }
 
-func (o Level) DescMapping() map[int]string {
-	return map[int]string{
+func (o Level) DescMapping() map[int64]string {
+	return map[int64]string{
 		LevelNormal:   "普通",
 		LevelSilver:   "白银",
 		LevelGold:     "黄金",
@@ -39,9 +41,7 @@ func (o Level) DescMapping() map[int]string {
 }
 
 func (o *Level) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &o.Value); err != nil {
-		return err
-	}
+	o.Value = gjson.ParseBytes(data).Int()
 	o.Set = true
 	o.Desc = o.GetDesc()
 	return nil

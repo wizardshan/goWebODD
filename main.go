@@ -25,5 +25,9 @@ func main() {
 	ctrSms := controller.NewSms()
 	engine.GET("/sms/captcha", controller.Wrapper(ctrSms.Captcha))
 
+	repoPost := repository.NewPost(db)
+	ctrPost := controller.NewPost(repoPost)
+	engine.GET("/post", controller.Wrapper(ctrPost.One))
+
 	engine.Run()
 }

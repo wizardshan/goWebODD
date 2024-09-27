@@ -16,24 +16,28 @@ type User struct {
 	//Password user.Password
 }
 
-func (user *User) Mapper() *response.User {
-	if user == nil {
+func (domUser *User) Name() string {
+	return "User"
+}
+
+func (domUser *User) Mapper() *response.User {
+	if domUser == nil {
 		return nil
 	}
 	return &response.User{
-		ID:        user.ID.Value,
-		Mobile:    user.Mobile.Value,
-		Age:       user.Age.Value,
-		Level:     user.Level.Value,
-		LevelDesc: user.Level.Desc,
+		ID:        &domUser.ID.Value,
+		Mobile:    &domUser.Mobile.Value,
+		Age:       &domUser.Age.Value,
+		Level:     &domUser.Level.Value,
+		LevelDesc: &domUser.Level.Desc,
 	}
 }
 
-func (users Users) Mapper() response.Users {
-	size := len(users)
+func (domUsers Users) Mapper() response.Users {
+	size := len(domUsers)
 	respUsers := make(response.Users, size)
 	for i := 0; i < size; i++ {
-		respUsers[i] = users[i].Mapper()
+		respUsers[i] = domUsers[i].Mapper()
 	}
 	return respUsers
 }

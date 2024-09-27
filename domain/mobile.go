@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"encoding/json"
+	"github.com/tidwall/gjson"
 	"regexp"
 )
 
@@ -19,9 +19,7 @@ func (o Mobile) IsValid() bool {
 }
 
 func (o *Mobile) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &o.Value); err != nil {
-		return err
-	}
+	o.Value = gjson.ParseBytes(data).String()
 	o.Set = true
 	return nil
 }

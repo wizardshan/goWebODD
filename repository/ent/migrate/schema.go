@@ -8,14 +8,36 @@ import (
 )
 
 var (
+	// PostsColumns holds the columns for the "posts" table.
+	PostsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "title", Type: field.TypeString, Default: ""},
+		{Name: "content", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "view", Type: field.TypeInt64, Default: 0},
+		{Name: "user_id", Type: field.TypeInt64, Nullable: true, Default: 0},
+	}
+	// PostsTable holds the schema information for the "posts" table.
+	PostsTable = &schema.Table{
+		Name:       "posts",
+		Columns:    PostsColumns,
+		PrimaryKey: []*schema.Column{PostsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "posts_users_posts",
+				Columns:    []*schema.Column{PostsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
 		{Name: "hash_id", Type: field.TypeString, Default: ""},
 		{Name: "mobile", Type: field.TypeString, Default: ""},
 		{Name: "password", Type: field.TypeString},
-		{Name: "age", Type: field.TypeInt, Default: 0},
-		{Name: "level", Type: field.TypeInt, Default: 0},
+		{Name: "age", Type: field.TypeInt64, Default: 0},
+		{Name: "level", Type: field.TypeInt64, Default: 0},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -25,9 +47,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		PostsTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	PostsTable.ForeignKeys[0].RefTable = UsersTable
 }

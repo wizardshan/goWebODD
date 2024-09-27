@@ -18,3 +18,7 @@ func (o *ID) UnmarshalJSON(data []byte) error {
 	o.Set = true
 	return nil
 }
+
+func (o *ID) Name() string {
+	return "ID"
+}
