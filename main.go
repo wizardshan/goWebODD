@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"goWebODD/controller"
 	"goWebODD/repository"
 	"goWebODD/repository/ent"
+	controller2 "goWebODD/test/controller"
 )
 
 func main() {
@@ -17,17 +17,17 @@ func main() {
 
 	engine := gin.New()
 	repoUser := repository.NewUser(db)
-	ctrUser := controller.NewUser(repoUser)
-	engine.GET("/user", controller.Wrapper(ctrUser.One))
-	engine.GET("/user/:id", controller.Wrapper(ctrUser.OnePath))
-	engine.GET("/users", controller.Wrapper(ctrUser.Many))
+	ctrUser := controller2.NewUser(repoUser)
+	engine.GET("/user", controller2.Wrapper(ctrUser.One))
+	engine.GET("/user/:id", controller2.Wrapper(ctrUser.OnePath))
+	engine.GET("/users", controller2.Wrapper(ctrUser.Many))
 
-	ctrSms := controller.NewSms()
-	engine.GET("/sms/captcha", controller.Wrapper(ctrSms.Captcha))
+	ctrSms := controller2.NewSms()
+	engine.GET("/sms/captcha", controller2.Wrapper(ctrSms.Captcha))
 
 	repoPost := repository.NewPost(db)
-	ctrPost := controller.NewPost(repoPost)
-	engine.GET("/post", controller.Wrapper(ctrPost.One))
+	ctrPost := controller2.NewPost(repoPost)
+	engine.GET("/post", controller2.Wrapper(ctrPost.One))
 
 	engine.Run()
 }
